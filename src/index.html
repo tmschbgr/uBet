@@ -7,54 +7,29 @@
     </head>
     <body>
         <div id="app" style="display: none; margin-left: 20px">
-            <h1>Opinion poll</h1>
-            <span>Blue: </span><span id="blues"></span><br>
-            <span>Red: </span><span id="reds"></span><br>
-            <button onclick="vote(0)">Vote blue</button>
-            <button onclick="vote(1)">Vote red</button>
+            <h1>uBet</h1>
+            <span>amount: </span><span id="amount"></span><br>
+            <span>transactionType: </span><span id="transactionType"></span><br>
+            <span>sender: </span><span id="sender"></span><br>
+            <span>receiver: </span><span id="receiver"></span><br>
+            <span>status: </span><span id="status"></span><br>
+            <span>quote: </span><span id="quote"></span><br>
+            <button onclick="request(1, 5)">request</button>
+            <button onclick="offer(10)">offer</button>
+            <button onclick="accept()">accept</button>
             <br><br><span id="status"></span>
         </div>
 
         <script>
             // PUT YOUR CONTRACT'S ABI HERE
-            var abi = [
-                {
-                    "constant":true,
-                    "inputs":[],
-                    "name":"red",
-                    "outputs":[{"name":"","type":"uint256"}],
-                    "payable":false,
-                    "type":"function"
-                },
-                {
-                    "constant":false,
-                    "inputs":[{"name":"voteRed","type":"bool"}],
-                    "name":"vote",
-                    "outputs":[],
-                    "payable":false,
-                    "type":"function"
-                },
-                {
-                    "constant":true,
-                    "inputs":[],
-                    "name":"getEntitlement",
-                    "outputs":[{"name":"","type":"address"}],
-                    "payable":false,"type":"function"
-                },
-                {
-                    "constant":true,
-                    "inputs":[],
-                    "name":"blue",
-                    "outputs":[{"name":"","type":"uint256"}],
-                    "payable":false,"type":"function"
-                }
-            ];
+            // var abi = [{"constant":true,"inputs":[{"name":"_address","type":"address"}],"name":"isEntitled","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"}]
+            var abi =[{"constant":true,"inputs":[],"name":"status","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"accept","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"sender","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_quote","type":"uint256"}],"name":"offer","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getEntitlement","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"transactionType","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"quote","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"amount","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getRequest","outputs":[{"name":"s","type":"address"},{"name":"r","type":"address"},{"name":"tt","type":"bool"},{"name":"a","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_transactionType","type":"bool"},{"name":"_amount","type":"uint256"}],"name":"request","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"receiver","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"}];
 
             // PUT YOUR UNIQUE DAPP ID HERE
             var dappId = "com.tr.ubet";
 
             // PUT YOUR CONTRACT ADDRESS HERE
-            var contractAddress = "0x9dd59a987f908e813cc9e214c0d91f61a7c7de9f";
+            var contractAddress = "0x516b3caea66d3baa25592fddb230dab1ac34d4ba";
 
             var walletBar = new WalletBar({
                 dappNamespace: dappId,
@@ -69,9 +44,16 @@
                 document.getElementById("app").style.display="";
                 myContract = web3.eth.contract(abi).at(contractAddress);
 
+                console.log("Contract: ")
+                console.log(myContract)
+
                 setInterval( function () {
-                    myContract.blue(function(e, c) { if(!e) document.getElementById("blues").innerText=c; });
-                    myContract.red(function(e, c) { if(!e) document.getElementById("reds").innerText=c; });
+                    myContract.amount(function(e, c) { if(!e) document.getElementById("amount").innerText=c; });
+                    myContract.transactionType(function(e, c) { if(!e) document.getElementById("transactionType").innerText=c; });
+                    myContract.sender(function(e, c) { if(!e) document.getElementById("sender").innerText=c; });
+                    myContract.receiver(function(e, c) { if(!e) document.getElementById("receiver").innerText=c; });
+                    myContract.status(function(e, c) { if(!e) document.getElementById("status").innerText=c; });
+                    myContract.quote(function(e, c) { if(!e) document.getElementById("quote").innerText=c; });
                 }, 1000);
             })
             .catch(function(err) {
@@ -90,6 +72,47 @@
                     });
                 });
             }
+
+            function request(arg1, arg2) {
+                var account = walletBar.getCurrentAccount(); // get account selected in wallet bar
+                if (!account) return alert("You must log in to transact");
+                walletBar.createSecureSigner();
+                myContract.request.estimateGas(arg1, arg2, { from: account }, function (err1, gas) {
+                    if(err1) return alert("Error: "+err1);
+                    myContract.request.sendTransaction(arg1, arg2, { gas: gas, from: account }, function (err2, hash) {
+                        if(err2) return alert("Error: "+err2);
+                        //document.getElementById("status").innerText = "Last vote Tx ID: "+hash;
+                    });
+                });
+            }
+
+            function offer(arg1) {
+                var account = walletBar.getCurrentAccount(); // get account selected in wallet bar
+                if (!account) return alert("You must log in to transact");
+                walletBar.createSecureSigner();
+                myContract.offer.estimateGas(arg1, { from: account }, function (err1, gas) {
+                    if(err1) return alert("Error: "+err1);
+                    myContract.offer.sendTransaction(arg1, { gas: gas, from: account }, function (err2, hash) {
+                        if(err2) return alert("Error: "+err2);
+                        //document.getElementById("status").innerText = "Last vote Tx ID: "+hash;
+                    });
+                });
+            }
+
+            function accept() {
+                var account = walletBar.getCurrentAccount(); // get account selected in wallet bar
+                if (!account) return alert("You must log in to transact");
+                walletBar.createSecureSigner();
+                myContract.accept.estimateGas( { from: account }, function (err1, gas) {
+                    if(err1) return alert("Error: "+err1);
+                    myContract.accept.sendTransaction( { gas: gas, from: account }, function (err2, hash) {
+                        if(err2) return alert("Error: "+err2);
+                        //document.getElementById("status").innerText = "Last vote Tx ID: "+hash;
+                    });
+                });
+            }
+
+
         </script>
     </body>
 </html>
