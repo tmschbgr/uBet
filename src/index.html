@@ -1,3 +1,4 @@
+
 <html>
     <head>
         <meta charset="utf-8"> <!-- needed for ether symbol to display correctly -->
@@ -21,12 +22,13 @@
         </div>
 
         <script>
+            console.log("Hello there!");
             // PUT YOUR CONTRACT'S ABI HERE
             // var abi = [{"constant":true,"inputs":[{"name":"_address","type":"address"}],"name":"isEntitled","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"}]
             var abi =[{"constant":true,"inputs":[],"name":"status","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"accept","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"sender","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_quote","type":"uint256"}],"name":"offer","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getEntitlement","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"transactionType","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"quote","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"amount","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getRequest","outputs":[{"name":"s","type":"address"},{"name":"r","type":"address"},{"name":"tt","type":"bool"},{"name":"a","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_transactionType","type":"bool"},{"name":"_amount","type":"uint256"}],"name":"request","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"receiver","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"}];
 
             // PUT YOUR UNIQUE DAPP ID HERE
-            var dappId = "com.tr.ubet";
+            var dappId = "com.tr.ubet.wb2";
 
             // PUT YOUR CONTRACT ADDRESS HERE
             var contractAddress = "0x516b3caea66d3baa25592fddb230dab1ac34d4ba";
@@ -60,6 +62,7 @@
                 console.log(err);
             });
 
+/*
             function vote(arg) {
                 var account = walletBar.getCurrentAccount(); // get account selected in wallet bar
                 if (!account) return alert("You must log in to transact");
@@ -72,7 +75,7 @@
                     });
                 });
             }
-
+*/
             function request(arg1, arg2) {
                 var account = walletBar.getCurrentAccount(); // get account selected in wallet bar
                 if (!account) return alert("You must log in to transact");
@@ -103,10 +106,36 @@
                 var account = walletBar.getCurrentAccount(); // get account selected in wallet bar
                 if (!account) return alert("You must log in to transact");
                 walletBar.createSecureSigner();
-                myContract.accept.estimateGas( { from: account }, function (err1, gas) {
-                    if(err1) return alert("Error: "+err1);
-                    myContract.accept.sendTransaction( { gas: gas, from: account }, function (err2, hash) {
-                        if(err2) return alert("Error: "+err2);
+                myContract.accept.estimateGas({ from: account }, function (err1, gas) {
+                    if (err1) return alert("Error: " + err1);
+                    myContract.accept.sendTransaction({ gas: gas, from: account }, function (err2, hash) {
+                        if (err2) return alert("Error: " + err2);
+                        //document.getElementById("status").innerText = "Last vote Tx ID: "+hash;
+                    });
+                });
+            }
+
+            function calcMu() {
+                var account = walletBar.getCurrentAccount(); // get account selected in wallet bar
+                if (!account) return alert("You must log in to transact");
+                walletBar.createSecureSigner();
+                myContract.calcMu.estimateGas({ from: account }, function (err1, gas) {
+                    if (err1) return alert("Error: " + err1);
+                    myContract.calcMu.sendTransaction({ gas: gas, from: account }, function (err2, hash) {
+                        if (err2) return alert("Error: " + err2);
+                        //document.getElementById("status").innerText = "Last vote Tx ID: "+hash;
+                    });
+                });
+            }
+
+            function doSettlement() {
+                var account = walletBar.getCurrentAccount(); // get account selected in wallet bar
+                if (!account) return alert("You must log in to transact");
+                walletBar.createSecureSigner();
+                myContract.doSettlement.estimateGas({ from: account }, function (err1, gas) {
+                    if (err1) return alert("Error: " + err1);
+                    myContract.doSettlement.sendTransaction({ gas: gas, from: account }, function (err2, hash) {
+                        if (err2) return alert("Error: " + err2);
                         //document.getElementById("status").innerText = "Last vote Tx ID: "+hash;
                     });
                 });
