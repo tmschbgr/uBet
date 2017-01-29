@@ -1,0 +1,122 @@
+<html>
+    <head>
+        <meta charset="utf-8"> <!-- needed for ether symbol to display correctly -->
+    </head>
+    <body>
+
+
+        <script>
+            document.write("Script start\n");
+			// GLOBAL CONFIG
+            // margin account must contain at least 2 bitcoins
+            var margin_min = 20;
+
+            // if the impact on the margin accounts is lower than the tolerance, then there is no margin call
+            var tolerance = 1;
+			
+            // MARGINING AND SETTLEMENT FOR FX FORWARD ON BITCOINS
+            function cash_flows(price,number,strike,maturity_y, maturity_m, maturity_d,margin_A,margin_B,tolerance, margin_min)
+			{
+                var first_step = false;
+				var last_step = false;
+				var settle_with_A = 0;
+				var settle_with_B = 0;
+				var today = new Date();
+				var dd = today.getDate();
+				var mm = today.getMonth()+1; //January is 0!
+				var yyyy = today.getFullYear();
+				
+				if(dd<10) dd='0'+dd;
+				if(mm<10) mm='0'+mm;
+				today = yyyy+'-'+mm+'-'+dd;
+				
+				var currentDate = new Date(yyyy,mm,dd);
+				var maturityDate = new Date(maturity_y,maturity_m,maturity_d);
+				
+                if (margin_A == 0 & margin_B == 0) first_step = true;
+				if ( currentDate >= maturityDate) last_step = true;
+				
+				// current valuation without discounting
+				var value_now = number*(price-strike);
+				
+				// PERFORM MARGINING
+				// initialisation
+				if (first_step == true)
+				{
+					settle_with_A = margin_min;
+					settle_with_B = margin_min;
+				}
+				else 
+				{
+					settle_with_A = 0;
+					settle_with_B = 0;
+				}
+				
+				// Margining
+				var tmp = 0;
+				if (value_now > 0)
+				{
+					if (margin_A - margin_min > tolerance){
+						settle_with_A = settle_with_A - margin_A + margin_min;
+					}
+					if (Math.abs(value_now - margin_B) > tolerance){
+						
+						if(first_step == true) {
+							tmp = Math.max(value_now - margin_min, 0);
+						}
+						else {
+							tmp = Math.max(value_now - margin_B, margin_min - margin_B);
+						}
+						
+						settle_with_B = settle_with_B + tmp;
+					}
+				}
+				else
+				{
+					if (margin_B - margin_min > tolerance){
+						settle_with_B = settle_with_B - margin_B + margin_min;
+					}
+					if (Math.abs(value_now-margin_A) > tolerance){
+						
+						if(first_step == true) {
+							tmp = Math.min(value_now + margin_min, 0);
+						}
+						else {
+							tmp = Math.min(margin_A + value_now, margin_A - margin_min);
+						}
+						
+						settle_with_A = settle_with_A - tmp;
+					}
+					document.write(settle_with_A);
+				}
+				document.write("___</br>");
+				
+				if (last_step == true){
+					if (value_now > 0){
+						settle_with_A = settle_with_A - margin_min-value_now;
+						settle_with_B = settle_with_B - Math.max(margin_min - value_now, 0);
+					} else {
+						settle_with_A = settle_with_A - Math.max(margin_min - value_now, 0);
+						settle_with_B = settle_with_B - margin_min - value_now;
+					}
+					margin_A = 0;
+					margin_B = 0;
+				}
+				else {
+					margin_A = margin_A + settle_with_A;
+					margin_B = margin_B + settle_with_B;
+				}
+				return {settle_with_A, settle_with_B, margin_A, margin_B};
+            }
+			
+			// TEST it
+			var price = 3.14;
+			document.write("Hello</br>");
+			//query1 = oraclize_query("URL", "json(https://api.kraken.com/0/public/Ticker?pair=ETHUSD).result");
+			//document.write(query1);
+			out = cash_flows(price, 100, 9, "2019","01","30",2,100,tolerance, margin_min);
+			document.write("</br> Output:   "+out+"</br>");
+
+        </script>
+    </body>
+</html>
