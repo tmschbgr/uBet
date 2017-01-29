@@ -3,145 +3,151 @@
     <head>
         <meta charset="utf-8"> <!-- needed for ether symbol to display correctly -->
         <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
+        <link rel="stylesheet" href="style.css">
+        
         <script src="https://blockone.thomsonreuters.com/wallet-bar/bundle.js"></script>
         <script src="https://rawgit.com/ethereum/web3.js/develop/dist/web3.min.js"></script>
+        
+        <!-- Angular Material requires Angular.js Libraries -->
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.9/angular.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.9/angular-animate.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.9/angular-aria.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.9/angular-messages.min.js"></script>
+
+        <!-- Angular Material Library -->
+        <script src="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
+        
     </head>
-    <body>
-        <div id="app" style="display: none; margin-left: 20px">
-            <h1>uBet</h1>
-            <span>amount: </span><span id="amount"></span><br>
-            <span>transactionType: </span><span id="transactionType"></span><br>
-            <span>sender: </span><span id="sender"></span><br>
-            <span>receiver: </span><span id="receiver"></span><br>
-            <span>status: </span><span id="status"></span><br>
-            <span>quote: </span><span id="quote"></span><br>
-            <button onclick="request(1, 5)">request</button>
-            <button onclick="offer(10)">offer</button>
-            <button onclick="accept()">accept</button>
-            <br><br><span id="status"></span>
+    <body ng-app="app" ng-controller="appCtrl as appCtrl" ng-cloak style="background-color: white;">
+
+        <!-- Toolbar -->
+        <md-toolbar class="md-hue-2">
+            <div class="md-toolbar-tools">
+                <h2>
+                    <span>uBet</span>
+                </h2>
+            </div>
+        </md-toolbar>
+
+        <div layout="row" style="margin-top:100px;">
+
+            <!-- Request Card -->
+            <md-card flex="33">
+                 <md-card-title>
+                    <md-card-title-text>
+                        <span class="md-headline">Request an Interest Rate Hedge</span>
+                    </md-card-title-text>
+                </md-card-title>
+
+                <md-card-content>
+                    
+
+                    <!-- Transaction Type  -->
+                    <md-radio-group ng-model="request.type">
+                        <md-radio-button value="0">Buy</md-radio-button>
+                        <md-radio-button value="1">Sell</md-radio-button>
+                    </md-radio-group>
+
+                    <!-- Amount  -->
+                    <md-input-container class="md-icon-float">
+                        <label>Amount</label>
+                        <md-icon md-font-library="material-icons">attach_money</md-icon>
+                        <input type="number" step="any" name="rate" ng-model="request.amount"/>
+                    </md-input-container>
+
+                    <!-- Due Date  -->
+                    <md-datepicker ng-model="request.date" md-placeholder="Due Date"></md-datepicker>
+
+                    
+                </md-card-content>
+
+                <md-card-actions layout="row" layout-align="center center">
+                    <md-button md-no-ink class="md-raised md-primary" ng-click="request(request.type, request.amount)">Request</md-button>
+                </md-card-actions>
+            </md-card>
+
+            <!-- Offer Card -->
+            <md-card flex="33">
+                 <md-card-title>
+                    <md-card-title-text>
+                        <span class="md-headline">Place an offer</span>
+                    </md-card-title-text>
+                </md-card-title>
+
+                <md-card-content>
+
+                    <!--<h5>What are we dealing?</h5>
+                    <h5>Transaction Type: {{}}</h5>
+                    <h5>Requester: {{}}</h5>-->
+                    
+                    <!-- List with offers-->
+                    <md-list class="md-dense" flex>
+                        <md-subheader class="md-no-sticky">Current Requests</md-subheader>
+                        <div ng-repeat="offer in offers">
+                            <md-list-item class="md-3-line" ng-click="">
+                                <div class="md-list-item-text" layout="column">
+                                    <h3>Swap Rate</h3>
+                                    <h4>{{offer.requester}}</h4>
+                                    <p>{{offer.transactionType}}</p>
+                                </div>
+                            </md-list-item>
+                            <md-divider ></md-divider>
+                        </div>
+                    </md-list>
+
+                    <!-- Amount  -->
+                    <md-input-container class="md-icon-float">
+                        <label>Your Offer</label>
+                        <md-icon md-font-library="material-icons">timeline</md-icon>
+                        <input type="number" step="any" name="offer" ng-model="offer.offer"/>
+                    </md-input-container>
+                    
+                </md-card-content>
+
+                <md-card-actions layout="row" layout-align="center center">
+                    <md-button md-no-ink class="md-raised md-primary" ng-click="offer(offer.offer)">Send Offer</md-button>
+                </md-card-actions>
+            </md-card>
+
+            <!-- Accept Card -->
+            <md-card flex="33">
+                 <md-card-title>
+                    <md-card-title-text>
+                        <span class="md-headline">Accept an offer</span>
+                    </md-card-title-text>
+                </md-card-title>
+
+                <md-card-content>
+                    
+                    <!-- List with accepts-->
+                    <!-- List with offers-->
+                    <md-list class="md-dense" flex>
+                        <md-subheader class="md-no-sticky">Current Offers</md-subheader>
+                        <div ng-repeat="a in accepts">
+                            <md-list-item class="md-3-line" ng-click="">
+                                <div class="md-list-item-text" layout="column">
+                                    <h3>Swap Rate</h3>
+                                    <h4>{{a.requester}}</h4>
+                                    <p>{{a.transactionType}}</p>
+                                    <p>{{a.quote}}</p>
+                                </div>
+                            </md-list-item>
+                            <md-divider ></md-divider>
+                        </div>
+                    </md-list>
+                    
+                </md-card-content>
+
+                <md-card-actions layout="row" layout-align="center center">
+                    <md-button md-no-ink class="md-raised md-primary" ng-click="accept()">Accept Offer</md-button>
+                </md-card-actions>
+            </md-card>
         </div>
 
-        <script>
-            console.log("Hello there!");
-            // PUT YOUR CONTRACT'S ABI HERE
-            // var abi = [{"constant":true,"inputs":[{"name":"_address","type":"address"}],"name":"isEntitled","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"}]
-            var abi =[{"constant":true,"inputs":[],"name":"status","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"accept","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"sender","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_quote","type":"uint256"}],"name":"offer","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getEntitlement","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"transactionType","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"quote","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"amount","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getRequest","outputs":[{"name":"s","type":"address"},{"name":"r","type":"address"},{"name":"tt","type":"bool"},{"name":"a","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_transactionType","type":"bool"},{"name":"_amount","type":"uint256"}],"name":"request","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"receiver","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"}];
+        <!-- Controller  -->
+	<script src="app.js"></script>
 
-            // PUT YOUR UNIQUE DAPP ID HERE
-            var dappId = "com.tr.ubet.wb2";
-
-            // PUT YOUR CONTRACT ADDRESS HERE
-            var contractAddress = "0x516b3caea66d3baa25592fddb230dab1ac34d4ba";
-
-            var walletBar = new WalletBar({
-                dappNamespace: dappId,
-                blockchain: "norsborg",
-                callbacks: { signOut: function () { location.reload(); } }
-            });
-
-            var web3 = new Web3();
-            var myContract;
-            walletBar.applyHook(web3)
-            .then(function() {
-                document.getElementById("app").style.display="";
-                myContract = web3.eth.contract(abi).at(contractAddress);
-
-                console.log("Contract: ")
-                console.log(myContract)
-
-                setInterval( function () {
-                    myContract.amount(function(e, c) { if(!e) document.getElementById("amount").innerText=c; });
-                    myContract.transactionType(function(e, c) { if(!e) document.getElementById("transactionType").innerText=c; });
-                    myContract.sender(function(e, c) { if(!e) document.getElementById("sender").innerText=c; });
-                    myContract.receiver(function(e, c) { if(!e) document.getElementById("receiver").innerText=c; });
-                    myContract.status(function(e, c) { if(!e) document.getElementById("status").innerText=c; });
-                    myContract.quote(function(e, c) { if(!e) document.getElementById("quote").innerText=c; });
-                }, 1000);
-            })
-            .catch(function(err) {
-                console.log(err);
-            });
-
-/*
-            function vote(arg) {
-                var account = walletBar.getCurrentAccount(); // get account selected in wallet bar
-                if (!account) return alert("You must log in to transact");
-                walletBar.createSecureSigner();
-                myContract.vote.estimateGas(arg, { from: account }, function (err1, gas) {
-                    if(err1) return alert("Error: "+err1);
-                    myContract.vote.sendTransaction(arg, { gas: gas, from: account }, function (err2, hash) {
-                        if(err2) return alert("Error: "+err2);
-                        document.getElementById("status").innerText = "Last vote Tx ID: "+hash;
-                    });
-                });
-            }
-*/
-            function request(arg1, arg2) {
-                var account = walletBar.getCurrentAccount(); // get account selected in wallet bar
-                if (!account) return alert("You must log in to transact");
-                walletBar.createSecureSigner();
-                myContract.request.estimateGas(arg1, arg2, { from: account }, function (err1, gas) {
-                    if(err1) return alert("Error: "+err1);
-                    myContract.request.sendTransaction(arg1, arg2, { gas: gas, from: account }, function (err2, hash) {
-                        if(err2) return alert("Error: "+err2);
-                        //document.getElementById("status").innerText = "Last vote Tx ID: "+hash;
-                    });
-                });
-            }
-
-            function offer(arg1) {
-                var account = walletBar.getCurrentAccount(); // get account selected in wallet bar
-                if (!account) return alert("You must log in to transact");
-                walletBar.createSecureSigner();
-                myContract.offer.estimateGas(arg1, { from: account }, function (err1, gas) {
-                    if(err1) return alert("Error: "+err1);
-                    myContract.offer.sendTransaction(arg1, { gas: gas, from: account }, function (err2, hash) {
-                        if(err2) return alert("Error: "+err2);
-                        //document.getElementById("status").innerText = "Last vote Tx ID: "+hash;
-                    });
-                });
-            }
-
-            function accept() {
-                var account = walletBar.getCurrentAccount(); // get account selected in wallet bar
-                if (!account) return alert("You must log in to transact");
-                walletBar.createSecureSigner();
-                myContract.accept.estimateGas({ from: account }, function (err1, gas) {
-                    if (err1) return alert("Error: " + err1);
-                    myContract.accept.sendTransaction({ gas: gas, from: account }, function (err2, hash) {
-                        if (err2) return alert("Error: " + err2);
-                        //document.getElementById("status").innerText = "Last vote Tx ID: "+hash;
-                    });
-                });
-            }
-
-            function calcMu() {
-                var account = walletBar.getCurrentAccount(); // get account selected in wallet bar
-                if (!account) return alert("You must log in to transact");
-                walletBar.createSecureSigner();
-                myContract.calcMu.estimateGas({ from: account }, function (err1, gas) {
-                    if (err1) return alert("Error: " + err1);
-                    myContract.calcMu.sendTransaction({ gas: gas, from: account }, function (err2, hash) {
-                        if (err2) return alert("Error: " + err2);
-                        //document.getElementById("status").innerText = "Last vote Tx ID: "+hash;
-                    });
-                });
-            }
-
-            function doSettlement() {
-                var account = walletBar.getCurrentAccount(); // get account selected in wallet bar
-                if (!account) return alert("You must log in to transact");
-                walletBar.createSecureSigner();
-                myContract.doSettlement.estimateGas({ from: account }, function (err1, gas) {
-                    if (err1) return alert("Error: " + err1);
-                    myContract.doSettlement.sendTransaction({ gas: gas, from: account }, function (err2, hash) {
-                        if (err2) return alert("Error: " + err2);
-                        //document.getElementById("status").innerText = "Last vote Tx ID: "+hash;
-                    });
-                });
-            }
-
-
-        </script>
     </body>
 </html>
